@@ -1,7 +1,33 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 function Menu() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
+  const navItems = isAdmin
+    ? [
+        { to: "/admin/orders", label: "Quản lý đơn mua" },
+        { to: "/admin/sales", label: "Quản lý doanh số" },
+        { label: "Đăng xuất", onClick: handleLogout },
+      ]
+    : isAuthenticated
+    ? [
+        { to: "/", label: "Trang chủ" },
+        { to: "/cart", label: "Giỏ hàng" },
+        { label: "Đăng xuất", onClick: handleLogout },
+      ]
+    : [
+        { to: "/", label: "Trang chủ" },
+        { to: "/cart", label: "Giỏ hàng" },
+        { to: "/login", label: "Đăng nhập" },
+      ];
 
   return (
     <header style={styles.header}>
@@ -11,27 +37,30 @@ function Menu() {
         </Link>
 
         <nav style={styles.nav}>
-          <Link
-            to="/"
-            style={
-              location.pathname === "/"
-                ? styles.activeLink
-                : styles.navLink
-            }
-          >
-            Trang chủ
-          </Link>
-
-          <Link
-            to="/cart"
-            style={
-              location.pathname === "/cart"
-                ? styles.activeLink
-                : styles.navLink
-            }
-          >
-            Giỏ hàng
-          </Link>
+          {navItems.map((item, index) =>
+            item.onClick ? (
+              <button
+                key={index}
+                type="button"
+                onClick={item.onClick}
+                style={styles.navButton}
+              >
+                {item.label}
+              </button>
+            ) : (
+              <Link
+                key={item.to}
+                to={item.to}
+                style={
+                  location.pathname === item.to
+                    ? styles.activeLink
+                    : styles.navLink
+                }
+              >
+                {item.label}
+              </Link>
+            )
+          )}
         </nav>
       </div>
     </header>
@@ -72,6 +101,18 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "14px",
+  },
+
+  navButton: {
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    color: "#111827",
+    fontSize: "17px",
+    fontWeight: "600",
+    padding: "10px 20px",
+    borderRadius: "12px",
+    transition: "0.3s",
   },
 
   navLink: {
